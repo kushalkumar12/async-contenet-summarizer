@@ -372,47 +372,6 @@ CACHE_TTL_HOURS=24
 Gemini is implemented with a retry mechanism: if a model request fails (due to an exception or a 404 response), it automatically tries other available models until one succeeds. 
 In some cases, however, none of the models may return a response.
 
-## Job Flow Diagram
-
-```
-POST /submit
-     │
-     ▼
-Check DB for duplicate (same content_hash + COMPLETED)
-     │
-     ├── Duplicate found → return existing jobId immediately
-     │
-     └── New job → save to PostgreSQL (status: QUEUED)
-                        │
-                        ▼
-                   Publish to Kafka
-                        │
-                        ▼
-                 Worker picks up message
-                        │
-                        ▼
-                 Check Redis cache
-                        │
-                 ┌──────┴──────┐
-             Cache HIT      Cache MISS
-                 │               │
-                 │          Fetch URL content
-                 │               │
-                 │          Call Gemini API
-                 │               │
-                 │          Store in Redis
-                 │               │
-                 └──────┬──────┘
-                        │
-                 Save summary to PostgreSQL
-                 (status: COMPLETED)
-                        │
-                        ▼
-                 GET /result returns summary
-```
-
----
-
 ## Author
 
 Built with Spring Boot 3.2.5, Apache Kafka, Redis, PostgreSQL, and Google Gemini 1.5 Flash.
